@@ -303,7 +303,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         if ((valueArray[stopIndex] == valueArray[i]) and (actions[i] != "Stop")):
                             best_action = actions[i]
                         i += 1
-                print(best_action)
                 return best_action
             else:
                 return best_score
@@ -467,12 +466,22 @@ class MyGhost:
 
 
 def betterEvaluationFunction(currentGameState):
+    """
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
 
-    foodCoeff, powerCoeff, ghostCoeff, gameStateScoreCoeff = 2, 3, 1, 10
+    DESCRIPTION: <write something here so we know what you did>
+    """
+    "*** YOUR CODE HERE ***"
+    # util.raiseNotDefined()
+    # gán trọng số
+    foodCoeff, powerCoeff, ghostCoeff, gameStateScoreCoeff = 2, 3, 1, 1
     currPos, currFood = currentGameState.getPacmanPosition(), currentGameState.getFood()
     currPower = currentGameState.getCapsules()
+    scaredTimes = [
+        ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()]
 
-    # tìm con ma gần nhất
+    # find the closest ghost
     theClosestGhost = MyGhost()
     closest_distance = 1000000000
     for ghostState in currentGameState.getGhostStates():
@@ -485,28 +494,31 @@ def betterEvaluationFunction(currentGameState):
             theClosestGhost.position = ghostPos
             theClosestGhost.mahhattan = distance
             theClosestGhost.scaredTime = ghostScareTimer
-
     # tính điểm ghost score
+
     if (theClosestGhost.mahhattan < 1 and theClosestGhost.scaredTime == 0):
-        ghostScore = 100000
-        ghostCoeff = -100000
+        ghostScore = 100
+        ghostCoeff = -100
     else:
         ghostScore = 1 / theClosestGhost.mahhattan
     if (theClosestGhost.scaredTime > 0):
         ghostCoeff = 100
         ghostScore = abs(ghostScore)
 
+    # if isScared and closestGhost < max(scaredTimes):
+    #     ghostCoeff, ghostScore = 100, abs(ghostScore)
+
     # tính khoảng cách pacman -> chấm thức ăn gần nhất, trường hợp không còn chấm thức ăn nào sẽ lấy 999
     foodDistance = [util.manhattanDistance(
-        currPos, foodPos) for foodPos in currFood.asList()] + [999999]
+        currPos, foodPos) for foodPos in currFood.asList()] + [999]
     closestFood = float(min(foodDistance))
 
-    #   tính khoảng cách đến viên năng lượng
+    #   tính khoảng cách đến chấm thức ăn To
     powerDistance = [
         999] + [util.manhattanDistance(powerPos, currPos) for powerPos in currPower]
     closestPower = float(min(powerDistance))
 
-    #   Tính evaluation các đặc trưng
+    #   Tính evaluation
     foodScore = 1 if len(currFood.asList()) == 0 else 1 / closestFood
     powerScore = 1 if len(currPower) == 0 else 1 / closestPower
 
@@ -514,82 +526,6 @@ def betterEvaluationFunction(currentGameState):
         ghostScore + gameStateScoreCoeff*currentGameState.getScore()
 
     return total_score
-
-
-def betterEvaluationFunction0(currentGameState):
-    """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
-
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** MR Hoang CODE right there ***"
-    #
-    # newPos = currentGameState.getPacmanPosition()
-    # newFood = currentGameState.getFood()
-    # newGhostStates = currentGameState.getGhostStates()
-    # newCapsules = currentGameState.getCapsules()
-    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-    #
-    # closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-    # if newCapsules:
-    #     closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
-    # else:
-    #     closestCapsule = 0
-    #
-    # if closestCapsule:
-    #     closest_capsule = -3 / closestCapsule
-    # else:
-    #     closest_capsule = 100
-    #
-    # if closestGhost:
-    #     ghost_distance = -2 / closestGhost
-    # else:
-    #     ghost_distance = -500
-    #
-    # foodList = newFood.asList()
-    # if foodList:
-    #     closestFood = min([manhattanDistance(newPos, food) for food in foodList])
-    # else:
-    #     closestFood = 0
-    #
-    # return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
-    "18521348 Code righ there"
-#   weight number, originaly, i choose 396 because it is my birthday (i was born in 3rd june)
-#   I also try 2 3 1 (risky position which pacman doesnt care about died, It really gain high score but is killed once, or more)
-    foodCoeff, powerCoeff, ghostCoeff = 2, 3, 1
-    currPos, currFood = currentGameState.getPacmanPosition(), currentGameState.getFood()
-    currGhostPos, currPower = currentGameState.getGhostPositions(
-    ), currentGameState.getCapsules()
-    scaredTimes = [
-        ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()]
-    isScared = True if max(scaredTimes) != 0 else False
-
-#   manhattan DISTANCE list of current foods
-    foodDistance = [util.manhattanDistance(
-        currPos, foodPos) for foodPos in currFood.asList()] + [999]
-# 999 is a place holder because maybe we win and no food available
-    closestFood = float(min(foodDistance))
-#   manhattan DISTANCE list of current ghosts
-    ghostDistance = [util.manhattanDistance(
-        currPos, ghostPos) for ghostPos in currGhostPos]
-    closestGhost = float(min(ghostDistance))
-#   manhattan DISTANCE list of current powers
-    powerDistance = [
-        999] + [util.manhattanDistance(powerPos, currPos) for powerPos in currPower]
-    closestPower = float(min(powerDistance))
-#   Calculate the state of pacman
-    foodScore = 1 if len(currFood.asList()) == 0 else 1 / closestFood
-    powerScore = 1 if len(currPower) == 0 else 1 / closestPower
-    ghostScore = -100 if closestGhost < 1 else 1 / closestGhost
-#   the reason why i use 1/closetFood because closet food is an weight number of food, the smaller the more important it is (easy to get & earn
-#   score). That also work with power (the big food). The next problem is ghost. As you can see. If closest ghost make ghost score is big(about equal
-#   1) => 1. If not, we dont care about ghost.(lower than 1, that also mean, we are not in danger)
-
-    if isScared and closestGhost < max(scaredTimes):
-        ghostCoeff, ghostScore = 100, abs(ghostScore)
-#   if the ghost is scared. This is a good chance to kill it & earn some more score
-    return foodCoeff * foodScore + ghostCoeff * ghostScore + powerCoeff * powerScore + currentGameState.getScore()
 
 
 # Abbreviation
